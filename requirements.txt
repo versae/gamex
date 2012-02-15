@@ -1,0 +1,7 @@
+Pillow==1.7.6
+Cython==0.15.1
+pygame==1.9.2pre  # -e hg+http://bitbucket.org/pygame/pygame
+Kivy==1.0.
+distribute==0.6.19
+SQLAlchemy==0.7.5
+wsgiref==0.1.2
