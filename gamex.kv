@@ -1,0 +1,49 @@
+#:kivy 1.0
+
+<Controller>:
+    paint: _paint
+    menu: _menu
+
+    AnchorLayout:
+        anchor_x: 'center' 
+        anchor_y: 'top'
+
+        Image:
+            id: _paint
+            size_hint: (1, 0.95)
+            on_touch_down: root.touch_down(*args)
+
+
+    AnchorLayout:
+        id: _menu
+        anchor_x: 'center' 
+        anchor_y: 'center'
+
+        Button:
+            text: 'start'
+            size_hint: (0.2, 0.1)
+            on_press: root.start()
+
+
+    AnchorLayout:
+        anchor_x: 'center' 
+        anchor_y: 'bottom'
+
+        BoxLayout:
+            size_hint: (1, 0.05)
+
+            Button:
+                text: '<< Previous'
+                on_press: root.previous()
+            Button:
+                text: 'Eyes'
+                on_press: root.eyes()
+            Button:
+                text: 'Faces'
+                on_press: root.faces()
+            Button:
+                text: 'Next >>'
+                on_press: root.next()
+
+
+
