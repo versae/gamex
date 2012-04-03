@@ -10,9 +10,13 @@ from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.floatlayout import FloatLayout
 
+import settings
+from backends import Backend
 
 Builder.load_file('gamex.kv')
-Config.set('graphics', 'fullscreen', "auto")
+if not settings.DEBUG:
+    Config.set('graphics', 'fullscreen', "auto")
+backend = Backend()
 
 
 class Controller(FloatLayout):
@@ -20,8 +24,9 @@ class Controller(FloatLayout):
     Add an action to be called from the kv lang file.
     '''
 
-    db = json.load(open('barroco_faces.json'))
+    db = backend.get("metadata")
     index =  0
+    count = db.count() - 1
     paint = ObjectProperty(None)
     menu = ObjectProperty(None)
     colors = {'tree':[1,0,0,0.4],
@@ -37,7 +42,7 @@ class Controller(FloatLayout):
 
     def show_faces(self):
         with self.paint.canvas:
-            r = self.db[self.index]['resolution']
+            r = self.db.get(self.index)['resolution']
 
             if r['width'] <= self.paint.width \
                 and r['height'] <= self.paint.height:
@@ -53,7 +58,7 @@ class Controller(FloatLayout):
                             self.paint.norm_image_size[1] / 2.0
 
             self.ellipses = []
-            for k,faces in self.db[self.index]['face_methods'].iteritems():
+            for k,faces in self.db.get(self.index)['face_methods'].iteritems():
                 for f in faces:
                     Color(  self.colors[k][0],self.colors[k][1],
                             self.colors[k][2],self.colors[k][3] )
@@ -85,15 +90,17 @@ class Controller(FloatLayout):
 
     def start(self):
         self.remove_widget(self.menu)
-        self.paint.source = './barroco/' + str(self.db[self.index]['id'])+'.jpg'
+        self.paint.source = self.db.get(self.index)["image"]
         self.show_faces()
 
     def previous(self):
         """ shows the previous image and update the index """
         self.clean_rects()
-        if self.index > 0: self.index -= 1
-        else: self.index == len(self.db) - 1
-        self.paint.source = './barroco/' + str(self.db[self.index]['id'])+'.jpg'
+        if self.index > 0:
+            self.index -= 1
+        else:
+            self.index == self.count
+        self.paint.source = self.db.get(self.index)["image"]
         self.show_faces()
 
     def faces(self):
@@ -105,17 +112,19 @@ class Controller(FloatLayout):
     def next(self):
         """ shows the next image and update the index """
         self.clean_rects()
-        if self.index < len(self.db) - 1: self.index += 1
-        else: self.index = 0
-        self.paint.source = './barroco/' + str(self.db[self.index]['id'])+'.jpg'
+        if self.index < self.count:
+            self.index += 1
+        else:
+            self.index = 0
+        self.paint.source = self.db.get(self.index)["image"]
         self.show_faces()
 
 
-
-
 class ControllerApp(App):
+
     def build(self):
         return Controller(info='Hello world')
+
 
 if __name__ in ('__android__', '__main__'):
     ControllerApp().run()
