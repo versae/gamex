@@ -1,16 +1,19 @@
+import json
+import random
 import kivy
 kivy.require('1.1.1')
 
-from kivy.uix.floatlayout import FloatLayout
 from kivy.app import App
-from kivy.properties import ObjectProperty, StringProperty
-from kivy.lang import Builder
+from kivy.config import Config
 from kivy.graphics import Color, Ellipse, Line, Rectangle, InstructionGroup
-import json
-import random
+from kivy.lang import Builder
+from kivy.properties import ObjectProperty, StringProperty
+from kivy.uix.floatlayout import FloatLayout
 
 
 Builder.load_file('gamex.kv')
+Config.set('graphics', 'fullscreen', "auto")
+
 
 class Controller(FloatLayout):
     '''Create a controller that receives a custom widget from the kv lang file.
