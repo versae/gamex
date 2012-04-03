@@ -5,13 +5,46 @@
     menu: _menu
 
     AnchorLayout:
-        anchor_x: 'center' 
+        anchor_x: 'left' 
         anchor_y: 'top'
 
         Image:
             id: _paint
-            size_hint: (1, 0.95)
+            size_hint: (0.9, 0.95)
             on_touch_down: root.touch_down(*args)
+
+
+    AnchorLayout:
+        anchor_x: 'right' 
+        anchor_y: 'top'
+
+        BoxLayout:
+            size_hint: (0.1, 0.95)
+            orientation: 'vertical'
+            AnchorLayout:
+                anchor_x: 'center' 
+                anchor_y: 'center'
+                Image:
+                    size_hint: (0.9, 0.9)
+                    on_touch_down: root.face()
+                    source: 'img/punch.png'
+            Button:
+                text: 'Nose'
+            Button:
+                text: 'Mouth'
+            Button:
+                text: 'Throttle'
+            AnchorLayout:
+                anchor_x: 'center' 
+                anchor_y: 'center'
+                Image:
+                    size_hint: (0.9, 0.9)
+                    color: [1,.3,.3,.5]
+                    on_touch_down: root.eyes()
+                    source: 'img/eyes-droped-icon.png'
+
+            Button:
+                text: 'Ears'
 
 
     AnchorLayout:
@@ -31,16 +64,15 @@
 
         BoxLayout:
             size_hint: (1, 0.05)
-
             Button:
                 text: '<< Previous'
                 on_press: root.previous()
-            Button:
-                text: 'Eyes'
-                on_press: root.eyes()
-            Button:
-                text: 'Faces'
-                on_press: root.faces()
+            Label:
+                color: [0.9,0.8,0.5,0.5]
+                text: 'High score: ' + str(root.high_score)
+            Label:
+                color: [0.3,0.9,0.8,0.9]
+                text: 'Your score: ' + str(root.score)
             Button:
                 text: 'Next >>'
                 on_press: root.next()

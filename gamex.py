@@ -3,13 +3,16 @@ import random
 import kivy
 kivy.require('1.1.1')
 
+from kivy.clock import Clock
 from kivy.app import App
 from kivy.config import Config
 from kivy.graphics import Color, Ellipse, Line, Rectangle, InstructionGroup
 from kivy.lang import Builder
 from kivy.properties import ObjectProperty, StringProperty
 from kivy.uix.floatlayout import FloatLayout
+from kivy.uix.image import Image
 
+from functools import partial
 import settings
 from backends import Backend
 
@@ -38,7 +41,9 @@ class Controller(FloatLayout):
     y_start = 0
     prop = 1.0
     ellipses = []
-
+    score = 0
+    high_score = 0
+    icon = None
 
     def show_faces(self):
         with self.paint.canvas:
@@ -60,6 +65,7 @@ class Controller(FloatLayout):
             self.ellipses = []
             for k,faces in self.db.get(self.index)['face_methods'].iteritems():
                 for f in faces:
+                    print 'face: ' + str(f)
                     Color(  self.colors[k][0],self.colors[k][1],
                             self.colors[k][2],self.colors[k][3] )
                     e = Ellipse(
@@ -70,22 +76,36 @@ class Controller(FloatLayout):
                                     int(f['height'] * self.prop/2.0)), 
                             size =( int(f['width'] * self.prop),
                                     int(f['height'] * self.prop)))
+                    print 'ellipse: ' + str(e.pos)
                     self.ellipses.append(e)
 
+    def to_image_coord(self, touch):
+        touch.x = int((touch.x - self.x_start) / float(self.prop))
+        touch.y = ((self.height - touch.y - self.y_start) / float(self.prop))
+        print "to_image: " + str(touch.x) + ',' + str(touch.y)
+        return touch
 
-    def clean_rects(self):
+    def to_screen_coord(self, touch):
+        touch.x = self.x_start + int(touch.x*self.prop)
+        touch.y =  self.height - self.y_start - int(touch.y*self.prop)
+        print "to_screen: "+ str(touch.x) + ',' + str(touch.y)
+        return touch
+
+    def remove_ellipses(self):
         with self.paint.canvas:
             for e in self.ellipses:
                 self.paint.canvas.remove(e)
 
-
     def touch_down(self, paint, touch, *args):
-        print str(touch.x) + ',' + str(touch.y)
-        with paint.canvas:
-            Color(random.random(), 1, 1, 0.5, mode='hsv')
-            w=20
-            h=20
-            Ellipse(pos=(touch.x-int(w/2.0),touch.y-int(h/2.0)), size=(w,h))
+        print "original: "+ str(touch.x) + ',' + str(touch.y)
+        touch = self.to_image_coord(touch)
+        touch = self.to_screen_coord(touch)
+        w=h=48
+        icon = Image(source='img/punch.png', 
+                        pos=(touch.x-int(w/2.0),touch.y-int(h/2.0)), 
+                        size=(w,h))
+        self.paint.add_widget(icon);
+        Clock.schedule_interval(partial(fade, parent = self, image = icon), .01)
 
 
     def start(self):
@@ -95,7 +115,7 @@ class Controller(FloatLayout):
 
     def previous(self):
         """ shows the previous image and update the index """
-        self.clean_rects()
+        self.remove_ellipses()
         if self.index > 0:
             self.index -= 1
         else:
@@ -103,7 +123,7 @@ class Controller(FloatLayout):
         self.paint.source = self.db.get(self.index)["image"]
         self.show_faces()
 
-    def faces(self):
+    def face(self):
         pass
 
     def eyes(self):
@@ -111,13 +131,25 @@ class Controller(FloatLayout):
 
     def next(self):
         """ shows the next image and update the index """
-        self.clean_rects()
+        self.remove_ellipses()
         if self.index < self.count:
             self.index += 1
         else:
             self.index = 0
         self.paint.source = self.db.get(self.index)["image"]
         self.show_faces()
+
+
+def fade(time, parent, image, rate = .01, limit = 0):
+    a = image.color[3]
+
+    if a > limit:
+        a -= rate
+        image.color = (1, 1, 1, a)
+    if a <= limit:
+        parent.paint.remove_widget(image);
+        a = 1.0
+        return False
 
 
 class ControllerApp(App):
