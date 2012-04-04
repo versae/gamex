@@ -49,42 +49,42 @@
             size_hint: (0.1, 0.95)
             orientation: 'vertical'
             AnchorLayout:
-                action: root.FACE
+                action: root.types.FACE
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/punch.png'
+                    source: root.actions[root.types.FACE]
                     color: [1,1,1,1]
             AnchorLayout:
-                action: root.NOSE
+                action: root.types.NOSE
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/punch.png'
+                    source: root.actions[root.types.NOSE]
                     color: [.5,.5,.5,.5]
             AnchorLayout:
-                action: root.MOUTH
+                action: root.types.MOUTH
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/punch.png'
+                    source: root.actions[root.types.MOUTH]
                     color: [.5,.5,.5,.5]
             AnchorLayout:
-                action: root.EYES
+                action: root.types.EYES
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/icon.png'
+                    source: root.actions[root.types.EYES]
                     color: [.5,.5,.5,.5]
             AnchorLayout:
-                action: root.EARS
+                action: root.types.EARS
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/punch.png'
+                    source: root.actions[root.types.EARS]
                     color: [.5,.5,.5,.5]
             AnchorLayout:
-                action: root.THROAT
+                action: root.types.THROAT
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:

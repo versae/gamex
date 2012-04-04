@@ -2,12 +2,23 @@
 import json
 from os import path
 
+from kivy.logger import Logger
 from pymongo import Connection
 
 import settings
 
 
-__all__ = ["Backend"]
+__all__ = ["Backend", "Types"]
+
+
+# Type of actions
+class Types(object):
+    FACE = 'face'
+    EYES = 'eyes'
+    EARS = 'ears'
+    NOSE = 'nose'
+    THROAT = 'throat'
+    MOUTH = 'mouth'
 
 
 class BackendInstance(object):
@@ -34,10 +45,34 @@ class MongoBackend(BaseBackend):
         self.db = self.connection[database["NAME"]]
         self.load_metadata()
 
+    def _get_mean(self, methods, default=50):
+        width_count = 0
+        height_count = 0
+        height = 0
+        width = 0
+        for method, values in methods.items():
+            if values:
+                for value in values:
+                    height += value["height"]
+                    width += value["width"]
+                    width_count += 1
+                    height_count += 1
+        if height_count and width_count:
+            return (height / height_count + width / width_count) / 2
+        else:
+            return default
+
     def load_metadata(self):
         metadata_file = open(settings.METADATA_PATH)
         metadata = json.load(metadata_file)
         metadata_file.close()
+        if settings.DEBUG:
+            Logger.info("Backend: Removing the key-value store for metadata")
+            for c in self.db.collection_names():
+                if c.startswith(u"metadata"):
+                    self.db[c].drop()
+                    self.db[c].drop_indexes()
+        Logger.info("Backend: Filling the key-value store for metadata")
         self.db["metadata"].drop()
         for i, data in enumerate(metadata):
             image_path = path.join(settings.IMAGES_PATH,
@@ -45,16 +80,26 @@ class MongoBackend(BaseBackend):
             data.update({
                 "index": i,
                 "image": image_path,
+                "mean": self._get_mean(data["face_methods"])
             })
             self.db["metadata"].insert(data)
 
     def get(self, name):
         if name == "metadata":
             return Collection(self.db[name], "index")
-        if name == "faces":
+        if name == Types.FACE:
             return Collection(self.db[name], "index")
-        if name == "eyes":
+        if name == Types.EARS:
             return Collection(self.db[name], "index")
+        if name == Types.EYES:
+            return Collection(self.db[name], "index")
+        if name == Types.NOSE:
+            return Collection(self.db[name], "index")
+        if name == Types.THROAT:
+            return Collection(self.db[name], "index")
+        if name == Types.MOUTH:
+            return Collection(self.db[name], "index")
+
 
 
 class Collection(object):
@@ -63,8 +108,12 @@ class Collection(object):
         self.collection = collection
         self.index = index
 
-    def get(self, index):
-        return self.collection.find_one({self.index: index})
+    def add(self, key, value):
+        key = unicode(key)
+        self.collection.insert({key: value, self.index: key})
+
+    def get(self, index, index_key=""):
+        return self.collection.find_one({index_key or self.index: index})
 
     def first(self, *args, **kwards):
         return self.collection.find_one(*args, **kwards)

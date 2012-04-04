@@ -1,6 +1,7 @@
 import json
 import random
 import kivy
+from os import path
 kivy.require('1.1.1')
 
 from kivy.clock import Clock
@@ -8,6 +9,7 @@ from kivy.app import App
 from kivy.config import Config
 from kivy.graphics import Color, Ellipse, Line, Rectangle, InstructionGroup
 from kivy.lang import Builder
+from kivy.logger import Logger
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
@@ -15,7 +17,7 @@ from kivy.core.window import Window
 
 from functools import partial
 import settings
-from backends import Backend
+from backends import Backend, Types
 
 Builder.load_file('gamex.kv')
 if not settings.DEBUG:
@@ -28,22 +30,17 @@ class Controller(FloatLayout):
     Add an action to be called from the kv lang file.
     '''
 
-    # Type of actions
-    FACE = 'face'
-    EYES = 'eyes'
-    EARS = 'ears'
-    NOSE = 'nose'
-    THROAT = 'throat'
-    MOUTH = 'mouth'
-    selected = FACE
-
+    types = Types
+    selected = Types.FACE
     # Information of the action
-    actions = {'face':'img/punch.png',
-                'eyes':'img/icon.png',
-                'ears':'img/punch.png',
-                'nose':'img/punch.png',
-                'throat':'img/punch.png',
-                'mouth':'img/punch.png'}
+    actions = {
+        Types.FACE: path.join('img', 'punch.png'),
+        Types.EYES: path.join('img', 'icon.png'),
+        Types.EARS: path.join('img', 'punch.png'),
+        Types.NOSE: path.join('img', 'punch.png'),
+        Types.THROAT: path.join('img', 'punch.png'),
+        Types.MOUTH: path.join('img', 'punch.png'),
+    }
 
     # References to the database
     db = backend.get("metadata")
@@ -80,8 +77,8 @@ class Controller(FloatLayout):
         """ Controls when there is a touch in the screen """
         print "original: "+ str(touch.x) + ',' + str(touch.y)
         
-        touch = self.to_image_coord(touch)
-        touch = self.to_screen_coord(touch)
+        image_touch = self.to_image_coord(touch)
+        touch = self.to_screen_coord(image_touch)
         if self.paint.collide_point(touch.x, touch.y):
             self.score += 10
             w=h=48
@@ -89,6 +86,12 @@ class Controller(FloatLayout):
                             pos=(touch.x-int(w/2.0),touch.y-int(h/2.0)), 
                             size=(w,h))
             self.paint.add_widget(icon);
+            # Store 'touch' in the backend
+            values = {"x": image_touch.x, "y": image_touch.y}
+            Logger.info("Point: Adding (%s, %s) from image %s to %s" \
+                        % (image_touch.x, image_touch.y, self.index,
+                           self.selected))
+            backend.get(self.selected).add(self.index, values)
             Clock.schedule_interval(partial(fade,parent=self,wdgt=icon),.01)
         else:
             for ctrl in self.controls.children:
