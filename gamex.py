@@ -12,6 +12,7 @@ from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.core.window import Window
+from kivy.graphics.context_instructions import Color
 
 from functools import partial
 import settings
@@ -39,7 +40,7 @@ class Controller(FloatLayout):
 
     # Information of the action
     actions = {'face':'img/punch.png',
-                'eyes':'img/icon.png',
+                'eyes':'img/eyes.png',
                 'ears':'img/punch.png',
                 'nose':'img/punch.png',
                 'throat':'img/punch.png',
@@ -57,6 +58,7 @@ class Controller(FloatLayout):
     controls = ObjectProperty(None)
     new_high_score = ObjectProperty(None)
     start = ObjectProperty(None)
+    navcolor = ObjectProperty((1,1,1,0))
 
     # keeps the possition of the current image
     x_start = 0
@@ -70,16 +72,22 @@ class Controller(FloatLayout):
     score = NumericProperty(0)
     high_score = NumericProperty(0)
 
+    # Make an object of the function so it can be unschedule
+    _next_function = None
+
     def __init__(self, **kwargs):
         """ Overridint the constructor """
         super(Controller, self).__init__(**kwargs)
         self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
         self._keyboard.bind(on_key_down=self._on_keyboard_down)
+        self.calculate_starts()
+        self._next_function = partial(next, self)
+        Clock.schedule_once(self._next_function,settings.SECONDS_PER_IMAGE)
 
     def touch_down(self, paint, touch, *args):
         """ Controls when there is a touch in the screen """
         print "original: "+ str(touch.x) + ',' + str(touch.y)
-
+        self.clock_transition()
         touch = self.to_image_coord(touch)
         touch = self.to_screen_coord(touch)
         if self.paint.collide_point(touch.x, touch.y):
@@ -108,6 +116,7 @@ class Controller(FloatLayout):
         btn.children[0].color = [1,1,1,1]
 
     def unselect(self):
+        """ unselect all the options """
         for c in self.controls.children:
             c.children[0].color = [.5,.5,.5,.5]
 
@@ -118,15 +127,22 @@ class Controller(FloatLayout):
         self.update_image()
 
     def update_image(self):
+        """ update the image in the screen and set the counter values """
+        self.clock_transition()
         self.hide_faces()
         self.increase_counter()
         self.current = self.db.get(self.index)["image"]
         self.calculate_starts()
 
+    def clock_transition(self):
+        """ clock the next transition """
+        Clock.unschedule(self._next_function)
+        Clock.schedule_once(self._next_function,settings.SECONDS_PER_IMAGE)
+
     def increase_counter(self):
         """ Increase counter for one game"""
         self.counter += 1
-        if self.counter >= 5:
+        if self.counter >= settings.IMAGES_PER_GAME:
             if self.score > self.high_score:
                 self.high_score = self.score
                 self.display_message(self.new_high_score)
@@ -135,6 +151,7 @@ class Controller(FloatLayout):
             self.score = 0
 
     def display_message(self, wdgt, msg=''):
+        """ Display messages """
         wdgt.color = (1, 1, 1, 1)
         if not msg == '': wdgt.text = msg
         Clock.schedule_interval(partial(fade,parent=self,wdgt=wdgt,
@@ -162,9 +179,14 @@ class Controller(FloatLayout):
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         """ with this is possible to control to show/hidden the faces """
         if keycode[1] == 's':
+            self.hide_faces()
             self.show_faces()
+            self.navcolor = [1,1,1,1]
+            Clock.unschedule(self._next_function)
         if keycode[1] == 'h':
             self.hide_faces()
+            self.navcolor = [1,1,1,0]
+            Clock.schedule_once(self._next_function,settings.SECONDS_PER_IMAGE)
         return True
 
     def hide_faces(self):

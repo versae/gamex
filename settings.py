@@ -3,6 +3,8 @@ from os import path
 
 
 DEBUG = True
+IMAGES_PER_GAME = 5
+SECONDS_PER_IMAGE = 5
 
 PROJECT_NAME = "Gamex"
 PROJECT_ROOT = path.dirname(path.abspath(__file__))

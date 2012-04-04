@@ -74,7 +74,7 @@
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/icon.png'
+                    source: root.actions['eyes']
                     color: [.5,.5,.5,.5]
             AnchorLayout:
                 action: root.EARS
@@ -101,7 +101,10 @@
             size_hint: (1, 0.05)
             Button:
                 text: '<< Previous'
+                color: root.navcolor
+                size_hint: (0.5, 1)
                 on_press: root.previous()
+                background_color: [0,0,0,1]
             Label:
                 color: [0.9,0.8,0.5,0.5]
                 text: 'High score: ' + str(root.high_score)
@@ -110,7 +113,8 @@
                 text: 'Your score: ' + str(root.score)
             Button:
                 text: 'Next >>'
+                color: root.navcolor
+                size_hint: (0.5, 1)
                 on_press: root.next()
-
-
+                background_color: [0,0,0,1]
 
