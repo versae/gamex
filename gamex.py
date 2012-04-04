@@ -79,7 +79,7 @@ class Controller(FloatLayout):
     def touch_down(self, paint, touch, *args):
         """ Controls when there is a touch in the screen """
         print "original: "+ str(touch.x) + ',' + str(touch.y)
-        
+
         touch = self.to_image_coord(touch)
         touch = self.to_screen_coord(touch)
         if self.paint.collide_point(touch.x, touch.y):
@@ -97,11 +97,9 @@ class Controller(FloatLayout):
 
     def previous(self):
         """ shows the previous image and update the index """
-        self.hide_faces()
         if self.index > 0: self.index -= 1
         else: self.index == self.count
-        self.increase_counter()
-        self.current = self.db.get(self.index)["image"]
+        self.update_image()
 
     def set_selected(self, btn, select):
         """ set the type of game """
@@ -115,11 +113,15 @@ class Controller(FloatLayout):
 
     def next(self):
         """ shows the next image and update the index """
-        self.hide_faces()
         if self.index < self.count: self.index += 1
         else: self.index = 0
+        self.update_image()
+
+    def update_image(self):
+        self.hide_faces()
         self.increase_counter()
         self.current = self.db.get(self.index)["image"]
+        self.calculate_starts()
 
     def increase_counter(self):
         """ Increase counter for one game"""
@@ -131,7 +133,6 @@ class Controller(FloatLayout):
                 self.display_message(self.start)
             self.counter = 0
             self.score = 0
-
 
     def display_message(self, wdgt, msg=''):
         wdgt.color = (1, 1, 1, 1)
@@ -173,21 +174,25 @@ class Controller(FloatLayout):
                 self.paint.canvas.remove(f)
             self.faces = []
 
+    def calculate_starts(self):
+        """ calculate the start point of the image """
+        r = self.db.get(self.index)['resolution']
+        if r['width'] <= self.paint.width \
+            and r['height'] <= self.paint.height:
+            self.prop = 1.0
+        elif self.paint.width - r['width'] < self.paint.height - r['height']:
+            self.prop = self.paint.width / float(r['width'])
+        else:
+            self.prop = self.paint.height / float(r['height'])
+        self.x_start=self.paint.width/2.0 - \
+                self.paint.norm_image_size[0] / 2.0
+        self.y_start=self.paint.height/2.0 - \
+                        self.paint.norm_image_size[1] / 2.0
+
     def show_faces(self):
         """ show the faces from the database """
+        self.calculate_starts()
         with self.paint.canvas:
-            r = self.db.get(self.index)['resolution']
-            if r['width'] <= self.paint.width \
-                and r['height'] <= self.paint.height:
-                self.prop = 1.0
-            elif self.paint.width - r['width'] < self.paint.height - r['height']:
-                self.prop = self.paint.width / float(r['width'])
-            else:
-                self.prop = self.paint.height / float(r['height'])
-            self.x_start=self.paint.width/2.0 - \
-                    self.paint.norm_image_size[0] / 2.0
-            self.y_start=self.paint.height/2.0 - \
-                            self.paint.norm_image_size[1] / 2.0
             for k,faces in self.db.get(self.index)['face_methods'].iteritems():
                 for f in faces:
                     print 'face: ' + str(f)
