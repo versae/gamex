@@ -3,6 +3,8 @@
 <Controller>:
     paint: _paint
     controls: _controls
+    new_high_score: _new_high_score
+    start: _start
 
     AnchorLayout:
         anchor_x: 'left' 
@@ -10,9 +12,32 @@
 
         Image:
             id: _paint
-            source: root.db.get(root.index)["image"]
+            source: root.current
             size_hint: (0.9, 0.95)
             on_touch_down: root.touch_down(*args)
+
+        AnchorLayout:
+            anchor_x: 'left' 
+            anchor_y: 'top'
+
+            Label:
+                id: _new_high_score
+                text: 'New high score: ' + str(root.high_score)
+                color: [1,1,1,0]
+                font_size: 32
+                size_hint: (0.9, 0.95)
+
+        AnchorLayout:
+            anchor_x: 'left' 
+            anchor_y: 'top'
+
+            Label:
+                id: _start
+                text: 'Start'
+                color: [1,1,1,0]
+                font_size: 32
+                size_hint: (0.9, 0.1)
+
 
 
     AnchorLayout:

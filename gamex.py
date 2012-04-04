@@ -8,7 +8,7 @@ from kivy.app import App
 from kivy.config import Config
 from kivy.graphics import Color, Ellipse, Line, Rectangle, InstructionGroup
 from kivy.lang import Builder
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
 from kivy.core.window import Window
@@ -49,10 +49,14 @@ class Controller(FloatLayout):
     db = backend.get("metadata")
     index =  0
     count = db.count() - 1
+    counter = 0
+    current = StringProperty(db.get(index)["image"])
 
     # references to the paint widget of the interface
     paint = ObjectProperty(None)
     controls = ObjectProperty(None)
+    new_high_score = ObjectProperty(None)
+    start = ObjectProperty(None)
 
     # keeps the possition of the current image
     x_start = 0
@@ -63,8 +67,8 @@ class Controller(FloatLayout):
     faces = []
 
     # Variables for scores
-    score = 0
-    high_score = 0
+    score = NumericProperty(0)
+    high_score = NumericProperty(0)
 
     def __init__(self, **kwargs):
         """ Overridint the constructor """
@@ -79,12 +83,13 @@ class Controller(FloatLayout):
         touch = self.to_image_coord(touch)
         touch = self.to_screen_coord(touch)
         if self.paint.collide_point(touch.x, touch.y):
+            self.score += 10
             w=h=48
             icon = Image(source= self.actions[self.selected], 
                             pos=(touch.x-int(w/2.0),touch.y-int(h/2.0)), 
                             size=(w,h))
             self.paint.add_widget(icon);
-            Clock.schedule_interval(partial(fade, parent = self, image = icon), .01)
+            Clock.schedule_interval(partial(fade,parent=self,wdgt=icon),.01)
         else:
             for ctrl in self.controls.children:
                 if ctrl.collide_point(touch.x, touch.y):
@@ -93,12 +98,10 @@ class Controller(FloatLayout):
     def previous(self):
         """ shows the previous image and update the index """
         self.hide_faces()
-        if self.index > 0:
-            self.index -= 1
-        else:
-            self.index == self.count
-        self.paint.source = self.db.get(self.index)["image"]
-        self.show_faces()
+        if self.index > 0: self.index -= 1
+        else: self.index == self.count
+        self.increase_counter()
+        self.current = self.db.get(self.index)["image"]
 
     def set_selected(self, btn, select):
         """ set the type of game """
@@ -113,20 +116,38 @@ class Controller(FloatLayout):
     def next(self):
         """ shows the next image and update the index """
         self.hide_faces()
-        if self.index < self.count:
-            self.index += 1
-        else:
-            self.index = 0
-        self.paint.source = self.db.get(self.index)["image"]
+        if self.index < self.count: self.index += 1
+        else: self.index = 0
+        self.increase_counter()
+        self.current = self.db.get(self.index)["image"]
 
+    def increase_counter(self):
+        """ Increase counter for one game"""
+        self.counter += 1
+        if self.counter >= 5:
+            if self.score > self.high_score:
+                self.high_score = self.score
+                self.display_message(self.new_high_score)
+                self.display_message(self.start)
+            self.counter = 0
+            self.score = 0
+
+
+    def display_message(self, wdgt, msg=''):
+        wdgt.color = (1, 1, 1, 1)
+        if not msg == '': wdgt.text = msg
+        Clock.schedule_interval(partial(fade,parent=self,wdgt=wdgt,
+            rate=.01),.02)
 
     def to_image_coord(self, touch):
+        """ transforms to image coordinates """
         touch.x = int((touch.x - self.x_start) / float(self.prop))
         touch.y = ((self.height - touch.y - self.y_start) / float(self.prop))
         print "to_image: " + str(touch.x) + ',' + str(touch.y)
         return touch
 
     def to_screen_coord(self, touch):
+        """ transforms to screen coordinates """
         touch.x = self.x_start + int(touch.x*self.prop)
         touch.y =  self.height - self.y_start - int(touch.y*self.prop)
         print "to_screen: "+ str(touch.x) + ',' + str(touch.y)
@@ -183,22 +204,19 @@ class Controller(FloatLayout):
                     print 'ellipse: ' + str(e.pos)
                     self.faces.append(e)
 
-
-def fade(time, parent, image, rate = .01, limit = 0):
-    a = image.color[3]
+def fade(time, parent, wdgt, rate = .01, limit = 0):
+    a = wdgt.color[3]
     if a > limit:
         a -= rate
-        image.color = (1, 1, 1, a)
+        wdgt.color = (1, 1, 1, a)
     if a <= limit:
-        parent.paint.remove_widget(image);
+        parent.paint.remove_widget(wdgt);
         a = 1.0
         return False
-
 
 class ControllerApp(App):
     def build(self):
         return Controller(info='Hello world')
-
 
 if __name__ in ('__android__', '__main__'):
     ControllerApp().run()
