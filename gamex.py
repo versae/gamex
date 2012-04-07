@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 import json
 import random
 import kivy
@@ -36,7 +37,7 @@ class Controller(FloatLayout):
     # Information of the action
     actions = {
         Types.FACE: path.join('img', 'punch.png'),
-        Types.EYES: path.join('img', 'icon.png'),
+        Types.EYES: path.join('img', 'eyes.png'),
         Types.EARS: path.join('img', 'punch.png'),
         Types.NOSE: path.join('img', 'punch.png'),
         Types.THROAT: path.join('img', 'punch.png'),
