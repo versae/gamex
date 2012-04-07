@@ -1,29 +1,34 @@
 # -*- coding: utf-8 -*-
 import json
 import random
-import kivy
+from functools import partial
 from os import path
-kivy.require('1.1.1')
 
-from kivy.clock import Clock
+import kivy
+kivy.require('1.1.1')
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.config import Config
+from kivy.core.window import Window
 from kivy.graphics import Color, Ellipse, Line, Rectangle, InstructionGroup
+from kivy.graphics.context_instructions import Color
 from kivy.lang import Builder
 from kivy.logger import Logger
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
-from kivy.core.window import Window
-from kivy.graphics.context_instructions import Color
 
-from functools import partial
 import settings
 from backends import Backend, Types
 
 Builder.load_file('gamex.kv')
-if not settings.DEBUG:
+if settings.DEBUG:
+    Config.set('graphics', 'fullscreen', "0")
+    Config.set('graphics', 'show_cursor', 0)
+else:
     Config.set('graphics', 'fullscreen', "auto")
+    Config.set('graphics', 'show_cursor', 1)
+Config.write()
 backend = Backend()
 
 
@@ -50,6 +55,7 @@ class Controller(FloatLayout):
     count = db.count() - 1
     counter = 0
     current = StringProperty(db.get(index)["image"])
+    fullscreen = False
 
     # references to the paint widget of the interface
     paint = ObjectProperty(None)
@@ -191,6 +197,9 @@ class Controller(FloatLayout):
             self.hide_faces()
             self.navcolor = [1,1,1,0]
             Clock.schedule_once(self._next_function,settings.SECONDS_PER_IMAGE)
+        if keycode[1] == 'f' or keycode[1] == 'F':
+            if not settings.DEBUG:
+                Window.toggle_fullscreen()
         return True
 
     def hide_faces(self):
