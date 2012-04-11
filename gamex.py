@@ -41,12 +41,37 @@ class Controller(FloatLayout):
     selected = Types.FACE
     # Information of the action
     actions = {
-        Types.FACE: path.join('img', 'punch.png'),
-        Types.EYES: path.join('img', 'eyes.png'),
-        Types.EARS: path.join('img', 'punch.png'),
-        Types.NOSE: path.join('img', 'punch.png'),
-        Types.THROAT: path.join('img', 'punch.png'),
-        Types.MOUTH: path.join('img', 'punch.png'),
+        Types.FACE: path.join('img', 'actions', 'face.png'),
+        Types.EYES: path.join('img', 'actions', 'eye.png'),
+        Types.EARS: path.join('img', 'actions', 'ear.png'),
+        Types.NOSE: path.join('img', 'actions', 'nose.png'),
+        Types.THROAT: path.join('img', 'actions', 'throat.png'),
+        Types.MOUTH: path.join('img', 'actions', 'mouth.png'),
+    }
+
+    # Information of the action
+    animations = {
+        Types.FACE: [path.join('img', 'animations', 'beated.png'),
+                    path.join('img', 'animations', 'crying.png'),
+                    path.join('img', 'animations', 'cry_a_lot.png'),
+                    path.join('img', 'animations', 'about_crying.png')],
+        Types.EYES: [path.join('img', 'animations', 'eye.png'),
+                     path.join('img', 'animations', 'noeyes.png'),
+                     path.join('img', 'animations', 'plaster.png')],
+        Types.EARS: [path.join('img', 'animations', 'ear.png'),
+                     path.join('img', 'animations', 'blood.png'),
+                     path.join('img', 'animations', 'scream.png')],
+        Types.NOSE: [path.join('img', 'animations', 'nose.png'),
+                     path.join('img', 'animations', 'blood.png'),
+                     path.join('img', 'animations', 'nose1.png'),
+                     path.join('img', 'animations', 'nose2.png'),
+                     path.join('img', 'animations', 'plaster.png')],
+        Types.THROAT: [path.join('img', 'animations', 'blood.png'),
+                        path.join('img', 'animations', 'blood2.png'),
+                        path.join('img', 'animations', 'throat2.png'),
+                        path.join('img', 'animations', 'sleepy.png')],
+        Types.MOUTH: [path.join('img', 'animations', 'bloody_teeth.png'),
+                        path.join('img', 'animations', 'blood.png')]
     }
 
     # References to the database
@@ -97,7 +122,8 @@ class Controller(FloatLayout):
         if self.paint.collide_point(touch.x, touch.y):
             self.score += 10
             w=h=48
-            icon = Image(source= self.actions[self.selected], 
+            anims = self.animations[self.selected]
+            icon = Image(source= anims[random.randint(0, len(anims)-1)], 
                             pos=(touch.x-int(w/2.0),touch.y-int(h/2.0)), 
                             size=(w,h))
             self.paint.add_widget(icon);

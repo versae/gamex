@@ -63,18 +63,18 @@
                     source: root.actions[root.types.NOSE]
                     color: [.5,.5,.5,.5]
             AnchorLayout:
-                action: root.types.MOUTH
-                anchor_x: 'center' 
-                anchor_y: 'center'
-                Image:
-                    source: root.actions[root.types.MOUTH]
-                    color: [.5,.5,.5,.5]
-            AnchorLayout:
                 action: root.types.EYES
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
                     source: root.actions[root.types.EYES]
+                    color: [.5,.5,.5,.5]
+            AnchorLayout:
+                action: root.types.MOUTH
+                anchor_x: 'center' 
+                anchor_y: 'center'
+                Image:
+                    source: root.actions[root.types.MOUTH]
                     color: [.5,.5,.5,.5]
             AnchorLayout:
                 action: root.types.EARS
@@ -88,7 +88,7 @@
                 anchor_x: 'center' 
                 anchor_y: 'center'
                 Image:
-                    source: 'img/icon.png'
+                    source: root.actions[root.types.THROAT]
                     color: [.5,.5,.5,.5]
 
 
