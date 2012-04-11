@@ -4,6 +4,6 @@ Pillow==1.7.6
 ipdb==0.6.1
 ipython==0.12
 numpy==1.6.1
-pygame==1.9.2pre
+#pygame==1.9.2pre
 pymongo==2.1.1
 wsgiref==0.1.2

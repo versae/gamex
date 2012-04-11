@@ -2,7 +2,7 @@
 from os import path
 
 
-DEBUG = True
+DEBUG = False
 IMAGES_PER_GAME = 5
 SECONDS_PER_IMAGE = 5
 

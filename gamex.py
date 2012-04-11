@@ -27,7 +27,7 @@ if settings.DEBUG:
     Config.set('graphics', 'show_cursor', 0)
 else:
     Config.set('graphics', 'fullscreen', "auto")
-    Config.set('graphics', 'show_cursor', 1)
+    Config.set('graphics', 'show_cursor',0 )
 Config.write()
 backend = Backend()
 
