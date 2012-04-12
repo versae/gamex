@@ -24,10 +24,10 @@ from backends import Backend, Types
 Builder.load_file('gamex.kv')
 if settings.DEBUG:
     Config.set('graphics', 'fullscreen', "0")
-    Config.set('graphics', 'show_cursor', 0)
+    Config.set('graphics', 'show_cursor', 1)
 else:
     Config.set('graphics', 'fullscreen', "auto")
-    Config.set('graphics', 'show_cursor',0 )
+    Config.set('graphics', 'show_cursor', 0 )
 Config.write()
 backend = Backend()
 
