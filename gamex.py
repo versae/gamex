@@ -17,6 +17,7 @@ from kivy.logger import Logger
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
+from kivy.uix.label import Label
 from pygame import mouse
 
 
@@ -113,23 +114,20 @@ class Controller(FloatLayout):
         """ Controls when there is a touch in the screen """
         print "original: "+ str(touch.x) + ',' + str(touch.y)
         self.clock_transition()
-        image_touch = self.to_image_coord(touch)
-        touch = self.to_screen_coord(image_touch)
+        image_coord = self.to_image_coord(touch)
+        #touch = self.to_screen_coord(image_touch)
         if self.paint.collide_point(touch.x, touch.y):
-            self.score += 10
-            w=h=48
-            anims = self.animations[self.selected]
-            icon = Image(source= anims[random.randint(0, len(anims)-1)], 
-                            pos=(touch.x-int(w/2.0),touch.y-int(h/2.0)), 
-                            size=(w,h))
-            self.paint.add_widget(icon);
+            score_punch = self.punch_score(image_coord['x'], image_coord['y'])
+            self.score += score_punch
+            self.show_icon(touch.x, touch.y)
+            self.show_score(score_punch,touch.x, touch.y )
             # Store 'touch' in the backend
-            values = {"x": image_touch.x, "y": image_touch.y}
+            values = {"x": image_coord['x'], "y":  image_coord['y']}
             Logger.info("Point: Adding (%s, %s) from image %s to %s" \
-                        % (image_touch.x, image_touch.y, self.index,
+                        % (image_coord['x'], image_coord['y'], self.index,
                            self.selected))
             backend.get(self.selected).add(self.index, values)
-            Clock.schedule_interval(partial(fade,parent=self,wdgt=icon),.01)
+            #Clock.schedule_interval(partial(fade,parent=self,wdgt=icon),.01)
         else:
             for ctrl in self.controls.children:
                 if ctrl.collide_point(touch.x, touch.y):
@@ -178,7 +176,7 @@ class Controller(FloatLayout):
             if self.score > self.high_score:
                 self.high_score = self.score
                 self.display_message(self.new_high_score)
-                self.display_message(self.start)
+            self.display_message(self.start)
             self.counter = 0
             self.score = 0
 
@@ -191,10 +189,11 @@ class Controller(FloatLayout):
 
     def to_image_coord(self, touch):
         """ transforms to image coordinates """
-        touch.x = int((touch.x - self.x_start) / float(self.prop))
-        touch.y = ((self.height - touch.y - self.y_start) / float(self.prop))
-        print "to_image: " + str(touch.x) + ',' + str(touch.y)
-        return touch
+        coord = {}
+        coord['x'] = int((touch.x - self.x_start) / float(self.prop))
+        coord['y'] = ((self.height - touch.y - self.y_start) / float(self.prop))
+        print "to_image: " + str(coord['x']) + ',' + str(coord['y'])
+        return coord
 
     def to_screen_coord(self, touch):
         """ transforms to screen coordinates """
@@ -267,6 +266,39 @@ class Controller(FloatLayout):
                                     int(f['height'] * self.prop)))
                     print 'ellipse: ' + str(e.pos)
                     self.faces.append(e)
+
+    def punch_score(self, x, y):
+        """Calculate the score of a punch"""
+	score = random.randint(0, 10)
+        for k,faces in self.db.get(self.index)['face_methods'].iteritems():
+            for f in faces:
+                if x > f['x'] - int(f['width'] / 2.0) and \
+                   x < f['x'] + int(f['width'] / 2.0) and \
+                   y > f['y'] - int(f['height'] / 2.0) and \
+                   y < f['y'] + int(f['height'] / 2.0):
+                    score += random.randint(5, 15)
+	return score
+
+    def show_score(self, score, x, y):
+        """Show the score of a punch"""
+	label = Label(text=str(score), font_size=20, 
+			pos=(x+30,y+30), size=(0,0))
+	label.color=[random.random(), random.random(), random.random(), 1]
+
+        self.paint.add_widget(label);
+        Clock.schedule_interval(partial(fade,parent=self,wdgt=label),.01)
+
+    def show_icon(self, x, y):
+        """Show the icon of a punch"""
+        w=h=48
+        anims = self.animations[self.selected]
+        icon = Image(source= anims[random.randint(0, len(anims)-1)], 
+                        pos=(x-int(w/2.0),y-int(h/2.0)), 
+                        size=(w,h))
+        self.paint.add_widget(icon);
+        Clock.schedule_interval(partial(fade,parent=self,wdgt=icon),.01)
+
+                    
 
 def fade(time, parent, wdgt, rate = .01, limit = 0):
     a = wdgt.color[3]
