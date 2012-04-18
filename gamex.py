@@ -17,18 +17,14 @@ from kivy.logger import Logger
 from kivy.properties import ObjectProperty, StringProperty, NumericProperty
 from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.image import Image
+from pygame import mouse
+
 
 import settings
 from backends import Backend, Types
 
 Builder.load_file('gamex.kv')
-if settings.DEBUG:
-    Config.set('graphics', 'fullscreen', "0")
-    Config.set('graphics', 'show_cursor', 1)
-else:
-    Config.set('graphics', 'fullscreen', "auto")
-    Config.set('graphics', 'show_cursor', 0 )
-Config.write()
+mouse.set_visible(False)    
 backend = Backend()
 
 
@@ -214,18 +210,20 @@ class Controller(FloatLayout):
 
     def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
         """ with this is possible to control to show/hidden the faces """
-        if keycode[1] == 's':
+        if keycode[1] == 's' or keycode[1] == 'S':
             self.hide_faces()
             self.show_faces()
             self.navcolor = [1,1,1,1]
             Clock.unschedule(self._next_function)
-        if keycode[1] == 'h':
+            mouse.set_visible(True)
+        if keycode[1] == 'h' or keycode[1] == 'H':
             self.hide_faces()
             self.navcolor = [1,1,1,0]
             Clock.schedule_once(self._next_function,settings.SECONDS_PER_IMAGE)
+            mouse.set_visible(False)
         if keycode[1] == 'f' or keycode[1] == 'F':
-            if not settings.DEBUG:
-                Window.toggle_fullscreen()
+            Window.toggle_fullscreen()
+
         return True
 
     def hide_faces(self):
